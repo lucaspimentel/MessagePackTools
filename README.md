@@ -180,3 +180,15 @@ Reached end of bytes, but expected more data.
 ```
 
 </details>
+
+<details><summary>Invalid MessagePack. Single string, but the last byte is missing.</summary>
+
+```
+> dotnet run C:\temp\msgpack-tracechunk-short.bin
+Loaded 13 bytes from 'C:\temp\msgpack-tracechunk-short.bin'.
+
+String
+Reached end of bytes, but expected more data.
+```
+
+</details>
