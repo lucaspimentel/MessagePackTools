@@ -20,20 +20,26 @@ var bytes = File.ReadAllBytes(filename);
 Logger.WriteLine($"Loaded {bytes.Length:N0} bytes from '{filename}'.");
 Logger.WriteLine();
 
-DecodeAll(bytes);
+var reader = new MessagePackReader(bytes);
 
-Logger.WriteLine();
-Logger.WriteLine("Done.");
-
-static void DecodeAll(byte[] bytes)
+while (!reader.End)
 {
-    var reader = new MessagePackReader(bytes);
 
-    while (!reader.End)
+    try
     {
         DecodeNext(ref reader, depth: 0, prefix: string.Empty);
     }
+    catch (EndOfStreamException)
+    {
+        Logger.WriteLine();
+        Logger.WriteLine("Reached end of bytes, but expected more data.");
+
+        return;
+    }
 }
+
+Logger.WriteLine();
+Logger.WriteLine("Done.");
 
 static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
 {
