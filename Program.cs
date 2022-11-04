@@ -17,24 +17,25 @@ if (!File.Exists(filename))
 
 var bytes = File.ReadAllBytes(filename);
 
-Logger.WriteLine($"Read {bytes.Length} from file '{filename}'.");
+Logger.WriteLine($"Loaded {bytes.Length:N0} bytes from '{filename}'.");
+Logger.WriteLine();
 
-ReadAll(bytes);
+DecodeAll(bytes);
 
 Logger.WriteLine();
 Logger.WriteLine("Done.");
 
-static void ReadAll(byte[] bytes)
+static void DecodeAll(byte[] bytes)
 {
     var reader = new MessagePackReader(bytes);
 
     while (!reader.End)
     {
-        ReadNext(ref reader, depth: 0, prefix: string.Empty);
+        DecodeNext(ref reader, depth: 0, prefix: string.Empty);
     }
 }
 
-static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
+static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
 {
     MessagePackType nextType = reader.NextMessagePackType;
     var indent = new string(' ', depth * 2);
@@ -66,7 +67,7 @@ static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
 
             for (int x = 0; x < arrayLength; x++)
             {
-                ReadNext(ref reader, depth, $"[{x}]:");
+                DecodeNext(ref reader, depth, $"[{x}]:");
             }
 
             break;
@@ -79,10 +80,10 @@ static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
             for (int x = 0; x < mapLength; x++)
             {
                 var index = x.ToString();
-                ReadNext(ref reader, depth, $"[{index}] key:");
+                DecodeNext(ref reader, depth, $"[{index}] key:");
 
                 var mapValueIndent = new string(' ', index.Length + 3);
-                ReadNext(ref reader, depth, $"{mapValueIndent}value:");
+                DecodeNext(ref reader, depth, $"{mapValueIndent}value:");
             }
 
             break;
