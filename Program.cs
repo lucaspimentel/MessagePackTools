@@ -27,46 +27,46 @@ Logger.WriteLine("Done.");
 static void ReadAll(byte[] bytes)
 {
     var reader = new MessagePackReader(bytes);
-    int depth = 0;
 
     while (!reader.End)
     {
-        ReadNext(ref reader, depth, prefix: string.Empty);
+        ReadNext(ref reader, depth: 0, prefix: string.Empty);
     }
 }
 
 static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
 {
     MessagePackType nextType = reader.NextMessagePackType;
-    Logger.Write(depth, $"{prefix}{nextType}");
+    var indent = new string(' ', depth * 2);
+    Logger.Write($"{indent}{prefix}{nextType}");
 
     switch (nextType)
     {
         case MessagePackType.Integer:
-            Logger.WriteLine($": {reader.ReadInt64()}");
+            Logger.WriteLine($":{reader.ReadInt64()}");
             break;
         case MessagePackType.Nil:
             reader.ReadNil();
             Logger.WriteLine();
             break;
         case MessagePackType.Boolean:
-            Logger.WriteLine($": {reader.ReadBoolean()}");
+            Logger.WriteLine($":{reader.ReadBoolean()}");
             break;
         case MessagePackType.Float:
-            Logger.WriteLine($": {reader.ReadDouble()}");
+            Logger.WriteLine($":{reader.ReadDouble()}");
             break;
         case MessagePackType.String:
-            Logger.WriteLine($": {reader.ReadString()}");
+            Logger.WriteLine($":{reader.ReadString()}");
             break;
         case MessagePackType.Array:
             int arrayLength = reader.ReadArrayHeader();
             depth++;
 
-            Logger.WriteLine($": {arrayLength}");
+            Logger.WriteLine($":{arrayLength}");
 
             for (int x = 0; x < arrayLength; x++)
             {
-                ReadNext(ref reader, depth, $"{x}:");
+                ReadNext(ref reader, depth, $"[{x}]:");
             }
 
             break;
@@ -74,12 +74,15 @@ static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
             int mapLength = reader.ReadMapHeader();
             depth++;
 
-            Logger.WriteLine($": {mapLength}");
+            Logger.WriteLine($":{mapLength}");
 
             for (int x = 0; x < mapLength; x++)
             {
-                ReadNext(ref reader, depth, $"key {x}:");
-                ReadNext(ref reader, depth, $"value {x}:");
+                var index = x.ToString();
+                ReadNext(ref reader, depth, $"[{index}] key:");
+
+                var mapValueIndent = new string(' ', index.Length + 3);
+                ReadNext(ref reader, depth, $"{mapValueIndent}value:");
             }
 
             break;
@@ -87,6 +90,7 @@ static void ReadNext(ref MessagePackReader reader, int depth, string prefix)
         case MessagePackType.Binary:
         case MessagePackType.Extension:
         default:
+            reader.Skip();
             break;
     }
 }
