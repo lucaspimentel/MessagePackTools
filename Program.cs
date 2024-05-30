@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using System.Buffers;
+using MessagePack;
 using MessagePackTools;
 
 if (args.Length != 1)
@@ -52,19 +53,24 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
         case MessagePackType.Integer:
             Logger.WriteLine($":{reader.ReadInt64()}");
             break;
+
         case MessagePackType.Nil:
             reader.ReadNil();
             Logger.WriteLine();
             break;
+
         case MessagePackType.Boolean:
             Logger.WriteLine($":{reader.ReadBoolean()}");
             break;
+
         case MessagePackType.Float:
             Logger.WriteLine($":{reader.ReadDouble()}");
             break;
+
         case MessagePackType.String:
             Logger.WriteLine($":{reader.ReadString()}");
             break;
+
         case MessagePackType.Array:
             int arrayLength = reader.ReadArrayHeader();
             depth++;
@@ -77,6 +83,7 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
             }
 
             break;
+
         case MessagePackType.Map:
             int mapLength = reader.ReadMapHeader();
             depth++;
@@ -93,10 +100,26 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
             }
 
             break;
-        case MessagePackType.Unknown:
+
         case MessagePackType.Binary:
+            var bytes = reader.ReadBytes()?.ToArray();
+
+            if (bytes == null)
+            {
+                Logger.WriteLine("(null)");
+            }
+            else
+            {
+                Logger.Write($":{bytes.Length}");
+                Logger.WriteLine($":{HexConverter.ToString(bytes)}");
+            }
+
+            break;
+
+        case MessagePackType.Unknown:
         case MessagePackType.Extension:
         default:
+            Logger.WriteLine();
             reader.Skip();
             break;
     }
