@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using MessagePack;
 using MessagePackTools;
 
@@ -51,7 +51,7 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
     switch (nextType)
     {
         case MessagePackType.Integer:
-            Logger.WriteLine($":{reader.ReadInt64()}");
+            Logger.WriteLine($":{reader.ReadUInt64()}");
             break;
 
         case MessagePackType.Nil:
