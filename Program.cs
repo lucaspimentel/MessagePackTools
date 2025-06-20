@@ -1,46 +1,108 @@
-﻿using System.Buffers;
+using System.Buffers;
+using System.Text;
 using MessagePack;
 using MessagePackTools;
 
-if (args.Length != 1)
+if (args.Length == 0 || args[0] == "--help")
+{
+    Logger.WriteLine("Usage:");
+    Logger.WriteLine("  MessagePackTool [options] <filename>");
+    Logger.WriteLine();
+    Logger.WriteLine("Options:");
+    Logger.WriteLine("  --validate      Validate the MessagePack data in the file.");
+    Logger.WriteLine("  --save-to-json  Save the MessagePack data in the file to a JSON file.");
+    Logger.WriteLine("  --json-output   Output the MessagePack data in the file as JSON.");
+    Logger.WriteLine();
+    Logger.WriteLine("Arguments:");
+    Logger.WriteLine("  filename        The file containing the MessagePack data.");
+    return;
+}
+
+var command = Command.None;
+var filename = string.Empty;
+
+foreach (var arg in args)
+{
+    switch (arg)
+    {
+        case "--validate":
+            command = Command.Validate;
+            break;
+        case "--save-to-json":
+            command = Command.SaveToJson;
+            break;
+        case "--json-output":
+            command = Command.JsonOutput;
+            break;
+        default:
+        {
+            filename = arg;
+
+            if (!File.Exists(filename))
+            {
+                Logger.WriteLine($"File '{filename}' not found.");
+                return;
+            }
+
+            break;
+        }
+    }
+}
+
+if (command == Command.None)
+{
+    Logger.WriteLine("Must specify one of --validate, --save-to-json, or --json-output.");
+    return;
+}
+
+if (string.IsNullOrWhiteSpace(filename))
 {
     Logger.WriteLine("Must specify filename.");
     return;
 }
 
-var filename = args[0];
-
-if (!File.Exists(filename))
-{
-    Logger.WriteLine($"File '{filename}' not found.");
-    return;
-}
-
 var bytes = File.ReadAllBytes(filename);
 
-Logger.WriteLine($"Loaded {bytes.Length:N0} bytes from '{filename}'.");
-Logger.WriteLine();
-
-var reader = new MessagePackReader(bytes);
-
-while (!reader.End)
+if (command is Command.SaveToJson or Command.JsonOutput)
 {
+    var json = MessagePackSerializer.ConvertToJson(bytes);
 
-    try
+    if (command is Command.JsonOutput)
     {
-        DecodeNext(ref reader, depth: 0, prefix: string.Empty);
-    }
-    catch (EndOfStreamException)
-    {
-        Logger.WriteLine();
-        Logger.WriteLine("Reached end of bytes, but expected more data.");
-
+        Console.WriteLine(json);
         return;
     }
+
+    var jsonFilename = Path.ChangeExtension(filename, ".json");
+    File.WriteAllText(jsonFilename, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    Logger.WriteLine($"Saved as JSON to '{jsonFilename}'.");
 }
 
-Logger.WriteLine();
-Logger.WriteLine("Done.");
+if (command is Command.Validate)
+{
+    Logger.WriteLine($"Loaded {bytes.Length:N0} bytes from '{filename}'.");
+    Logger.WriteLine();
+
+    var reader = new MessagePackReader(bytes);
+
+    while (!reader.End)
+    {
+        try
+        {
+            DecodeNext(ref reader, depth: 0, prefix: string.Empty);
+        }
+        catch (EndOfStreamException)
+        {
+            Logger.WriteLine();
+            Logger.WriteLine("Reached end of bytes, but expected more data.");
+
+            return;
+        }
+    }
+
+    Logger.WriteLine();
+    Logger.WriteLine("Done.");
+}
 
 static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
 {
@@ -51,7 +113,7 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
     switch (nextType)
     {
         case MessagePackType.Integer:
-            Logger.WriteLine($":{reader.ReadInt64()}");
+            Logger.WriteLine($":{reader.ReadUInt64()}");
             break;
 
         case MessagePackType.Nil:
@@ -123,4 +185,12 @@ static void DecodeNext(ref MessagePackReader reader, int depth, string prefix)
             reader.Skip();
             break;
     }
+}
+
+enum Command
+{
+    None,
+    Validate,
+    SaveToJson,
+    JsonOutput
 }

@@ -1,16 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <OutputType>Exe</OutputType>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+        <PublishTrimmed>true</PublishTrimmed>
+        <PublishAot>true</PublishAot>
+
+        <!-- AOT size optimization options -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options?pivots=dotnet-7-0#trimming-framework-library-features -->
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <DebuggerSupport>false</DebuggerSupport>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+        <EventSourceSupport>false</EventSourceSupport>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+        <UseNativeHttpHandler>true</UseNativeHttpHandler>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MessagePack" Version="2.5.187" />
+      <PackageReference Include="MessagePack" Version="2.5.198" />
     </ItemGroup>
 
 </Project>
