@@ -8,8 +8,10 @@
         <LangVersion>default</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <PublishTrimmed>true</PublishTrimmed>
-        <PublishAot>true</PublishAot>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>false</SelfContained>
+        <PublishTrimmed>false</PublishTrimmed>
+        <PublishAot>false</PublishAot>
 
         <!-- AOT size optimization options -->
         <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options?pivots=dotnet-7-0#trimming-framework-library-features -->
